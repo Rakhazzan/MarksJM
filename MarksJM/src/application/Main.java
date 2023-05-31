@@ -17,6 +17,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -25,6 +26,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.Level;
 
 /**
  * Clase principal de la aplicación.
@@ -37,6 +42,8 @@ public class Main extends Application {
 	private TextField usernameTextField;
 	private PasswordField passwordField;
 	private Stage primaryStage;
+	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+	private FileHandler fileHandler;
 
 	/**
 	 * Método principal para ejecutar la aplicación.
@@ -49,8 +56,16 @@ public class Main extends Application {
 
 	@Override
 	public void start(Stage primaryStage) {
+		try {
+			fileHandler = new FileHandler("logs.txt", true);
+			fileHandler.setFormatter(new SimpleFormatter());
+			LOGGER.addHandler(fileHandler);
+		} catch (IOException e) {
+			LOGGER.log(Level.SEVERE, "Error creating log file", e);
+		}
 		this.primaryStage = primaryStage;
 		showLoginScreen();
+
 	}
 
 	/**
@@ -108,6 +123,13 @@ public class Main extends Application {
 			alert.setHeaderText(null);
 			alert.setContentText("Invalid username or password.");
 			alert.showAndWait();
+		}
+		if (isAdmin) {
+			LOGGER.log(Level.INFO, "Successful login for username: " + username);
+			showMainWindow();
+		} else {
+			LOGGER.log(Level.WARNING, "Failed login attempt for username: " + username);
+
 		}
 	}
 
@@ -176,7 +198,7 @@ public class Main extends Application {
 		Button consultarButton = new Button("Consultar");
 		consultarButton.setOnAction((e) -> searchAlumn());
 		Button afegirAlumneButton = new Button("Afegir alumne");
-		afegirAlumneButton.setOnAction(e -> mostrarVentanaAgregarAlumno());
+		afegirAlumneButton.setOnAction(e -> showAddAlumnWindow());
 		Button agregarNotasButton = new Button("Agregar Notas");
 		agregarNotasButton.setOnAction((e) -> showAgregarNotasScreen());
 
@@ -304,7 +326,7 @@ public class Main extends Application {
 	/**
 	 * Mostrar la ventana para agregar un alumno
 	 */
-	private void mostrarVentanaAgregarAlumno() {
+	private void showAddAlumnWindow() {
 		String imagePath = "\\Users\\34602\\Downloads\\eclipse-workspace\\MarksJM\\res\\beni.jpg";
 
 		Image image = new Image("file:" + imagePath);
@@ -335,16 +357,16 @@ public class Main extends Application {
 
 			if (!dni.isEmpty() && !nom.isEmpty() && !primerCognom.isEmpty() && !segonCognom.isEmpty()) {
 				if (verifyDNI(dni)) {
-					mostrarAlerta(AlertType.ERROR, "Error", "El DNI que has introduït ja existeix.");
+					showAlert(AlertType.ERROR, "Error", "El DNI que has introduït ja existeix.");
 				} else if (addAlumne(dni, nom, primerCognom, segonCognom)) {
 					// Actualizar la tabla de alumnos si se añade correctamente
 					searchAlumn();
 					stage.close();
 				} else {
-					mostrarAlerta(AlertType.ERROR, "Error", "Error al afegir l'alumne.");
+					showAlert(AlertType.ERROR, "Error", "Error al afegir l'alumne.");
 				}
 			} else {
-				mostrarAlerta(AlertType.ERROR, "Error", "Siusplau, introdueix tots els camps.");
+				showAlert(AlertType.ERROR, "Error", "Siusplau, introdueix tots els camps.");
 			}
 		});
 
@@ -370,14 +392,20 @@ public class Main extends Application {
 		stage.showAndWait();
 	}
 
-	private void mostrarAlerta(AlertType tipo, String titulo, String mensaje) {
+	private void showAlert(AlertType tipo, String title, String mensaje) {
 		Alert alerta = new Alert(tipo);
-		alerta.setTitle(titulo);
+		alerta.setTitle(title);
 		alerta.setHeaderText(null);
 		alerta.setContentText(mensaje);
 		alerta.showAndWait();
+		 LOGGER.log(Level.INFO, "Show alert: " + title);
 	}
-
+	@Override
+    public void stop() {
+        if (fileHandler != null) {
+            fileHandler.close();
+        }
+    }
 	private boolean verifyDNI(String dni) {
 		try {
 			Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
@@ -398,6 +426,7 @@ public class Main extends Application {
 	}
 
 	private boolean addAlumne(String dni, String nom, String primerCognom, String segonCognom) {
+		 LOGGER.log(Level.INFO, "Add new alumn: " + dni);
 		try {
 			Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
 					"sql7622667", "vYvaFsL32T");
@@ -422,6 +451,7 @@ public class Main extends Application {
 	 */
 	private void saveMarks(String dni, String curs, String materia, String ptrimestre, String strimestre,
 			String ttrimestre) {
+		 LOGGER.log(Level.INFO, "Save marks for alumn: " + dni);
 		try {
 			Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
 					"sql7622667", "vYvaFsL32T");
@@ -477,6 +507,7 @@ public class Main extends Application {
 			alert.showAndWait();
 			return;
 		}
+		 LOGGER.log(Level.INFO, "Search for alumn: " + dniTextField.getText());
 
 		try {
 			Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
