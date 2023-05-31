@@ -1,0 +1,35 @@
+.root {
+    -fx-background-color: #EA9999;
+    -fx-alignment: center;
+}
+
+.grid-pane {
+    -fx-padding: 10;
+    -fx-hgap: 10;
+    -fx-vgap: 10;
+    -fx-alignment: center;
+}
+
+.label {
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+
+.text-field {
+    -fx-pref-width: 200;
+   
+    -fx-background-color: #FFE599;
+}
+
+.combo-box {
+    -fx-pref-width: 200;
+    -fx-alignment: center;
+}
+
+
+
+.text-area {
+    -fx-pref-width: 400;
+    -fx-pref-height: 200;
+    -fx-alignment: center;
+}
