@@ -1,5 +1,9 @@
 package application;
 
+/**
+ * @author Mohamed Akhazzan i Joel Aguilera
+ * @Version 31/05/2023A
+ */
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -22,6 +26,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Clase principal de la aplicación.
+ */
 public class Main extends Application {
 	private TextField dniTextField;
 	private ComboBox<String> cursoComboBox;
@@ -31,6 +38,11 @@ public class Main extends Application {
 	private PasswordField passwordField;
 	private Stage primaryStage;
 
+	/**
+	 * Método principal para ejecutar la aplicación.
+	 *
+	 * @param args Argumentos de línea de comandos
+	 */
 	public static void main(String[] args) {
 		launch(args);
 	}
@@ -41,6 +53,9 @@ public class Main extends Application {
 		showLoginScreen();
 	}
 
+	/**
+	 * Muestra la pantalla de inicio de sesión.
+	 */
 	private void showLoginScreen() {
 		String imagePath = "\\Users\\34602\\Downloads\\eclipse-workspace\\MarksJM\\res\\beni.jpg";
 
@@ -75,6 +90,9 @@ public class Main extends Application {
 		primaryStage.show();
 	}
 
+	/**
+	 * Realiza el inicio de sesión.
+	 */
 	private void login() {
 		String username = usernameTextField.getText();
 		String password = passwordField.getText();
@@ -93,6 +111,14 @@ public class Main extends Application {
 		}
 	}
 
+	/**
+	 * Verifica las credenciales del usuario en la base de datos.
+	 *
+	 * @param username Nombre de usuario
+	 * @param password Contraseña
+	 * @return true si las credenciales son válidas y el usuario es un
+	 *         administrador, false de lo contrario
+	 */
 	private boolean verifyCredentials(String username, String password) {
 		try {
 			Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
@@ -120,6 +146,9 @@ public class Main extends Application {
 		return false; // Credenciales inválidas
 	}
 
+	/**
+	 * Muestra la ventana principal de la aplicación.
+	 */
 	private void showMainWindow() {
 		String imagePath = "\\Users\\34602\\Downloads\\eclipse-workspace\\MarksJM\\res\\beni.jpg";
 
@@ -127,7 +156,7 @@ public class Main extends Application {
 
 		primaryStage.getIcons().add(image);
 		primaryStage.setTitle("Consultoria de notas");
-
+		// Crear y configurar los controles
 		Label nomLabel = new Label("Nom:");
 		TextField nomTextField = new TextField();
 
@@ -145,7 +174,7 @@ public class Main extends Application {
 		cursoComboBox.setItems(FXCollections.observableArrayList("2020-21", "2021-22", "2022-23", "2023-24"));
 
 		Button consultarButton = new Button("Consultar");
-		consultarButton.setOnAction((e) -> consultarAlumnos());
+		consultarButton.setOnAction((e) -> searchAlumn());
 		Button afegirAlumneButton = new Button("Afegir alumne");
 		afegirAlumneButton.setOnAction(e -> mostrarVentanaAgregarAlumno());
 		Button agregarNotasButton = new Button("Agregar Notas");
@@ -175,7 +204,7 @@ public class Main extends Application {
 				ttrimestreColumn);
 		resultadosTextArea = new TextArea();
 		resultadosTextArea.setEditable(false);
-
+		// Crear el diseño de la ventana principal
 		GridPane gridPane = new GridPane();
 		gridPane.setPadding(new Insets(10));
 		gridPane.setHgap(10);
@@ -243,7 +272,7 @@ public class Main extends Application {
 			String strimestre = strimestreTextField.getText();
 			String ttrimestre = ttrimestreTextField.getText();
 
-			guardarNotas(dni, curs, materia, ptrimestre, strimestre, ttrimestre);
+			saveMarks(dni, curs, materia, ptrimestre, strimestre, ttrimestre);
 			stage.close();
 		});
 
@@ -272,6 +301,9 @@ public class Main extends Application {
 		stage.show();
 	}
 
+	/**
+	 * Mostrar la ventana para agregar un alumno
+	 */
 	private void mostrarVentanaAgregarAlumno() {
 		String imagePath = "\\Users\\34602\\Downloads\\eclipse-workspace\\MarksJM\\res\\beni.jpg";
 
@@ -302,11 +334,11 @@ public class Main extends Application {
 			String segonCognom = segonCognomTextField.getText();
 
 			if (!dni.isEmpty() && !nom.isEmpty() && !primerCognom.isEmpty() && !segonCognom.isEmpty()) {
-				if (verificarDNIExistente(dni)) {
+				if (verifyDNI(dni)) {
 					mostrarAlerta(AlertType.ERROR, "Error", "El DNI que has introduït ja existeix.");
-				} else if (afegirAlumne(dni, nom, primerCognom, segonCognom)) {
+				} else if (addAlumne(dni, nom, primerCognom, segonCognom)) {
 					// Actualizar la tabla de alumnos si se añade correctamente
-					consultarAlumnos();
+					searchAlumn();
 					stage.close();
 				} else {
 					mostrarAlerta(AlertType.ERROR, "Error", "Error al afegir l'alumne.");
@@ -346,7 +378,7 @@ public class Main extends Application {
 		alerta.showAndWait();
 	}
 
-	private boolean verificarDNIExistente(String dni) {
+	private boolean verifyDNI(String dni) {
 		try {
 			Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
 					"sql7622667", "vYvaFsL32T");
@@ -365,7 +397,7 @@ public class Main extends Application {
 		}
 	}
 
-	private boolean afegirAlumne(String dni, String nom, String primerCognom, String segonCognom) {
+	private boolean addAlumne(String dni, String nom, String primerCognom, String segonCognom) {
 		try {
 			Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
 					"sql7622667", "vYvaFsL32T");
@@ -385,7 +417,10 @@ public class Main extends Application {
 		}
 	}
 
-	private void guardarNotas(String dni, String curs, String materia, String ptrimestre, String strimestre,
+	/**
+	 * Guardamos las notas a la base de datos
+	 */
+	private void saveMarks(String dni, String curs, String materia, String ptrimestre, String strimestre,
 			String ttrimestre) {
 		try {
 			Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
@@ -403,6 +438,9 @@ public class Main extends Application {
 		}
 	}
 
+	/**
+	 * Comparar con la base de datos para ver si el DNI existe
+	 */
 	private boolean existsDni(String dni) {
 		try {
 			Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
@@ -424,14 +462,18 @@ public class Main extends Application {
 		return false;
 	}
 
-	private void consultarAlumnos() {
+	/**
+	 * Realiza una búsqueda de notas en la base de datos y muestra los resultados en
+	 * la tabla y en el área de resultados.
+	 */
+	private void searchAlumn() {
 		String dni = dniTextField.getText();
 		String curs = cursoComboBox.getValue();
 		if (!existsDni(dni)) {
 			Alert alert = new Alert(Alert.AlertType.ERROR);
 			alert.setTitle("Error");
 			alert.setHeaderText(null);
-			alert.setContentText("El DNI introduït no existeix. Afegeix el alumna");
+			alert.setContentText("El DNI introduït no existeix. Afegeix el alumne");
 			alert.showAndWait();
 			return;
 		}
@@ -468,8 +510,6 @@ public class Main extends Application {
 			e.printStackTrace();
 		}
 	}
-
-	// Métodos restantes...
 
 	public static class Alumno {
 		private String dni;
