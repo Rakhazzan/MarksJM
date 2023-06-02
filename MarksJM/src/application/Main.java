@@ -360,11 +360,10 @@ public class Main extends Application {
 					showAlert(AlertType.ERROR, "Error", "El DNI que has introduït ja existeix.");
 				} else if (addAlumne(dni, nom, primerCognom, segonCognom)) {
 					// Actualizar la tabla de alumnos si se añade correctamente
-					searchAlumn();
+					showAlert(AlertType.CONFIRMATION,"Creat","S'ha creat el nou alumne");
+					
 					stage.close();
-				} else {
-					showAlert(AlertType.ERROR, "Error", "Error al afegir l'alumne.");
-				}
+				} 
 			} else {
 				showAlert(AlertType.ERROR, "Error", "Siusplau, introdueix tots els camps.");
 			}
@@ -392,7 +391,7 @@ public class Main extends Application {
 		stage.showAndWait();
 	}
 
-	private void showAlert(AlertType tipo, String title, String mensaje) {
+	private static void showAlert(AlertType tipo, String title, String mensaje) {
 		Alert alerta = new Alert(tipo);
 		alerta.setTitle(title);
 		alerta.setHeaderText(null);
@@ -407,43 +406,44 @@ public class Main extends Application {
         }
     }
 	private boolean verifyDNI(String dni) {
-		try {
-			Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
-					"sql7622667", "vYvaFsL32T");
-			String query = "SELECT dni FROM alumn_regist WHERE dni = ?";
-			PreparedStatement statement = connection.prepareStatement(query);
-			statement.setString(1, dni);
-			ResultSet resultSet = statement.executeQuery();
-			boolean existeDNI = resultSet.next();
-			resultSet.close();
-			statement.close();
-			connection.close();
-			return existeDNI;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return false;
-		}
+	    try {
+	        Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
+	                "sql7622667", "vYvaFsL32T");
+	        String query = "SELECT dni FROM alumn_regist WHERE dni = ?";
+	        PreparedStatement statement = connection.prepareStatement(query);
+	        statement.setString(1, dni);
+	        ResultSet resultSet = statement.executeQuery();
+	        boolean existeDNI = resultSet.next();
+	        resultSet.close();
+	        statement.close();
+	        connection.close();
+	        return existeDNI;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
 	}
 
-	private boolean addAlumne(String dni, String nom, String primerCognom, String segonCognom) {
-		 LOGGER.log(Level.INFO, "Add new alumn: " + dni);
-		try {
-			Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
-					"sql7622667", "vYvaFsL32T");
-			String query = "INSERT INTO alumn_regist (dni, nom, pcognom, scognom) VALUES (?, ?, ?, ?)";
-			PreparedStatement statement = connection.prepareStatement(query);
-			statement.setString(1, dni);
-			statement.setString(2, nom);
-			statement.setString(3, primerCognom);
-			statement.setString(4, segonCognom);
-			int rowsAffected = statement.executeUpdate();
-			statement.close();
-			connection.close();
-			return rowsAffected > 0;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return false;
-		}
+	private static boolean addAlumne(String dni, String nom, String primerCognom, String segonCognom) {
+	    LOGGER.log(Level.INFO, "Add new alumn: " + dni);
+	    try {
+	        Connection connection = DriverManager.getConnection("jdbc:mysql://sql7.freesqldatabase.com/sql7622667",
+	                "sql7622667", "vYvaFsL32T");
+	        String query = "INSERT INTO alumn_regist (dni, nom, pcognom, scognom) VALUES (?, ?, ?, ?)";
+	        PreparedStatement statement = connection.prepareStatement(query);
+	        statement.setString(1, dni);
+	        statement.setString(2, nom);
+	        statement.setString(3, primerCognom);
+	        statement.setString(4, segonCognom);
+	        int rowsAffected = statement.executeUpdate();
+	        statement.close();
+	        connection.close();
+	        return rowsAffected > 0;
+	    } catch (SQLException e) {
+	        showAlert(AlertType.ERROR, "Error", "Error al afegir l'alumne: " + e.getMessage());
+	        e.printStackTrace();
+	        return false;
+	    }
 	}
 
 	/**
